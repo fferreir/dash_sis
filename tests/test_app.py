@@ -29,8 +29,8 @@ def test_simulacao_parametros_extremos():
     res = simular_sis(
         s_init=500.0,
         i_init=100.0,
-        beta=0.05,
-        gamma=0.01,
+        beta=2.5,
+        gamma=0.05,
         t_end=50.0,
         n_samples=500
     )

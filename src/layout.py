@@ -27,7 +27,7 @@ cabecalho = html.Div(
                     className="display-6 mb-1"
                 ),
                 html.P(
-                    "Simulador epidemiológico determinístico com perda imediata de imunidade pós-infecção e análise de equilíbrio endêmico.",
+                    "Simulador epidemiológico determinístico com incidência padrão (β·S·I/N), perda imediata de imunidade e equilíbrio endêmico.",
                     className="lead fs-6 mb-0 opacity-75"
                 ),
             ],
@@ -123,20 +123,20 @@ ajuste_cenarios = html.Div(
         html.Div(
             [
                 html.I(className="fa-solid fa-bookmark me-2 text-primary"),
-                "Cenários Rápidos e Perguntas de Estudo"
+                "Cenários Didáticos Rápidos (Questões de Estudo)"
             ],
             className="card-header"
         ),
         html.Div(
             [
                 html.P(
-                    "Carregue instantaneamente as configurações das questões didáticas:",
+                    "Carregue instantaneamente as configurações para explorar cada questão:",
                     className="small text-muted mb-2"
                 ),
                 html.Div(
                     [
                         dbc.Button(
-                            "Padrão (Referência)",
+                            "Padrão (Referência: β=0.90, γ=0.50)",
                             id="btn_padrao",
                             size="sm",
                             color="primary",
@@ -144,7 +144,7 @@ ajuste_cenarios = html.Div(
                             className="btn-scenario"
                         ),
                         dbc.Button(
-                            "Q1: Ref (γ=0.5, β=0.009)",
+                            "Q1: Ref (γ=0.50, R₀=1.80)",
                             id="btn_q1",
                             size="sm",
                             color="secondary",
@@ -152,7 +152,7 @@ ajuste_cenarios = html.Div(
                             className="btn-scenario"
                         ),
                         dbc.Button(
-                            "Q2a: γ=0.2 (Recup. Lenta)",
+                            "Q2a: γ=0.20 (R₀=4.50)",
                             id="btn_q2a",
                             size="sm",
                             color="danger",
@@ -160,7 +160,7 @@ ajuste_cenarios = html.Div(
                             className="btn-scenario"
                         ),
                         dbc.Button(
-                            "Q2b: γ=0.4",
+                            "Q2b: γ=0.40 (R₀=2.25)",
                             id="btn_q2b",
                             size="sm",
                             color="warning",
@@ -168,7 +168,7 @@ ajuste_cenarios = html.Div(
                             className="btn-scenario"
                         ),
                         dbc.Button(
-                            "Q2c: γ=0.8",
+                            "Q2c: γ=0.80 (R₀=1.13)",
                             id="btn_q2c",
                             size="sm",
                             color="info",
@@ -176,7 +176,7 @@ ajuste_cenarios = html.Div(
                             className="btn-scenario"
                         ),
                         dbc.Button(
-                            "Q2d: γ=0.9 (Quase Limiar)",
+                            "Q2d: Limiar γ=0.90 (R₀=1.00)",
                             id="btn_q2d",
                             size="sm",
                             color="dark",
@@ -184,7 +184,7 @@ ajuste_cenarios = html.Div(
                             className="btn-scenario"
                         ),
                         dbc.Button(
-                            "Extinção (γ=1.0, R₀<1)",
+                            "Extinção (γ=1.20, R₀=0.75)",
                             id="btn_extincao",
                             size="sm",
                             color="success",
@@ -217,15 +217,15 @@ ajuste_parametros = html.Div(
         html.Div(
             [
                 html.Div([
-                    dbc.Label(dcc.Markdown(r'$$\beta$$: Taxa de contatos infectantes ($$ano^{-1}$$)', mathjax=True), className="mb-0"),
+                    dbc.Label(dcc.Markdown(r'$$\beta$$: Taxa de transmissão / contatos ($$ano^{-1}$$)', mathjax=True), className="mb-0"),
                     html.Span(id="badge_beta", className="slider-val-badge badge-blue")
                 ], className="slider-label"),
                 dcc.Slider(
                     id="beta",
-                    min=0.001,
-                    max=0.050,
-                    step=0.001,
-                    value=0.009,
+                    min=0.10,
+                    max=2.50,
+                    step=0.05,
+                    value=0.90,
                     tooltip={"placement": "bottom", "always_visible": False}
                 ),
             ],
@@ -241,7 +241,7 @@ ajuste_parametros = html.Div(
                     id="gamma",
                     min=0.05,
                     max=1.50,
-                    step=0.01,
+                    step=0.05,
                     value=0.50,
                     tooltip={"placement": "bottom", "always_visible": False}
                 ),
@@ -287,8 +287,8 @@ ajuste_condicoes_iniciais = html.Div(
                 dcc.Slider(
                     id="s_init",
                     min=0,
-                    max=200,
-                    step=1,
+                    max=500,
+                    step=5,
                     value=100,
                     tooltip={"placement": "bottom", "always_visible": False}
                 ),
@@ -324,30 +324,34 @@ def _criar_secao_descricao(image_url):
     return html.Div([
         dcc.Markdown(
             r'''
-            É apresentado um modelo determinístico compartimental do tipo **SIS** (*Suscetível-Infectado-Suscetível*).
+            É apresentado um modelo determinístico compartimental do tipo **SIS** (*Suscetível-Infectado-Suscetível*) com **incidência padrão** (frequência-dependente).
 
             Neste modelo, consideramos infecções para as quais o indivíduo, algum tempo após ter passado pelo processo infeccioso, **volta imediatamente a ser suscetível**, sem adquirir imunidade duradoura.
             
             Exemplos clássicos de dinâmica SIS na infectologia incluem:
-            * **Doenças Sexualmente Transmissíveis (DSTs):** Infecções como gonorreia e clamídia, em que episódios de cura não geram proteção imunológica subsequente.
-            * **Infecções bacterianas de mucosas:** Otites e faringites recorrentes causadas por patógenos comuns.
+            * **Doenças Sexualmente Transmissíveis (DSTs):** Infecções bacterianas como gonorreia e clamídia, em que episódios de cura clínica não geram proteção imunológica subsequente.
+            * **Infecções bacterianas de mucosas:** Otites recorrentes, faringites e infecções urinárias.
 
-            Este modelo considera uma **população fixa** $$N = S + I$$, desconsiderando alterações por natalidade e mortalidade natural.
+            A população total é fechada e constante: $$N = S + I$$.
             ''', mathjax=True
         ),
         html.Div([
-            html.Img(src=image_url, className="sis-diagram my-3 d-block mx-auto", alt="Diagrama do Modelo SIS"),
+            html.Img(src=image_url, className="sis-diagram my-3 d-block mx-auto", alt="Diagrama do Modelo SIS com beta*S*I/N"),
         ]),
         dcc.Markdown(
             r'''
-            ### Equações Diferenciais Ordinárias (EDOs):
+            ### Equações Diferenciais Ordinárias (EDOs) com Termo $$\frac{\beta S I}{N}$$:
             $$\begin{aligned}
-            \frac{dS}{dt} &= -\beta S I + \gamma I \\
-            \frac{dI}{dt} &= \beta S I - \gamma I = (\beta S - \gamma) I
+            \frac{dS}{dt} &= -\frac{\beta S I}{N} + \gamma I \\
+            \frac{dI}{dt} &= \frac{\beta S I}{N} - \gamma I = \left(\frac{\beta S}{N} - \gamma\right) I
             \end{aligned}$$
 
             Somando as duas equações, observamos a conservação estrita da população total:
-            $$\frac{d(S + I)}{dt} = 0 \implies S(t) + I(t) = N = S(0) + I(0)$$
+            $$\frac{d(S + I)}{dt} = \frac{dN}{dt} = 0 \implies S(t) + I(t) = N = S(0) + I(0)$$
+
+            Em termos de proporções da população ($$s = S/N$$ e $$i = I/N$$, com $$s + i = 1$$):
+            $$\frac{di}{dt} = \beta (1 - i) i - \gamma i = (\beta - \gamma) i \left(1 - \frac{\beta}{\beta - \gamma} i\right)$$
+            que é formalmente equivalente à equação logística com taxa intrínseca $$r = \beta - \gamma$$.
             ''', mathjax=True
         )
     ])
@@ -357,12 +361,13 @@ parametros = html.Div(
     [
         dcc.Markdown(
             r'''
-            * **$$\beta$$ (Taxa de contatos potencialmente infectantes):** Frequência anual de contatos efetivos capazes de transmitir o patógeno ($$ano^{-1}$$).
-            * **$$\gamma$$ (Taxa de recuperação):** Velocidade de recuperação clínica ($$ano^{-1}$$). É o inverso do período infeccioso médio ($$\tau_{inf} = 1/\gamma$$).
-            * **$$S$$ (Suscetíveis):** Número de indivíduos vulneráveis à infecção.
-            * **$$I$$ (Infectados):** Número de indivíduos infectados capazes de transmitir o patógeno.
-            * **$$N = S + I$$:** População total sob monitoramento.
-            * **$$R_0 = \frac{\beta N}{\gamma}$$:** Número básico de reprodução, determinante do limiar epidemiológico.
+            * **$$\beta$$ (Taxa de transmissão per capita / contatos infectantes):** Número médio de contatos efetivos com potencial de transmissão que um indivíduo realiza por unidade de tempo ($$ano^{-1}$$).
+            * **$$\gamma$$ (Taxa de recuperação):** Velocidade de recuperação clínica ($$ano^{-1}$$), correspondendo ao inverso do período infeccioso médio ($$\tau_{inf} = 1/\gamma$$).
+            * **$$\frac{\beta S I}{N}$$ (Termo de Transmissão por Incidência Padrão):** O fluxo de novas infecções por ano. Note que a probabilidade de um contato ser com um infectado é $$I/N$$, e a população vulnerável é $$S$$.
+            * **$$S$$ (Suscetíveis):** Quantidade de indivíduos vulneráveis à infecção.
+            * **$$I$$ (Infectados):** Quantidade de indivíduos infectados capazes de transmitir o patógeno.
+            * **$$N = S + I$$:** População total sob estudo.
+            * **$$R_0 = \frac{\beta}{\gamma}$$:** Número básico de reprodução (adimensional), que define se a infecção se expande ou se extingue.
             ''', mathjax=True
         )
     ]
@@ -373,17 +378,24 @@ cond_inicial = html.Div(
         dcc.Markdown(
             r'''
             ### Configuração de Referência:
-            * Taxa de transmissão: $$\beta = 0.009 \space ano^{-1}$$
-            * Taxa de recuperação: $$\gamma = 0.5 \space ano^{-1}$$ (período infeccioso médio de $$2$$ anos)
-            * População inicial: $$S(0) = 100$$, $$I(0) = 1$$ ($$N = 101$$)
+            * Taxa de transmissão: $$\beta = 0.90 \space ano^{-1}$$
+            * Taxa de recuperação: $$\gamma = 0.50 \space ano^{-1}$$ (período infeccioso médio de $$2$$ anos)
+            * Condições iniciais: $$S(0) = 100$$, $$I(0) = 1$$ ($$N = 101$$)
 
             ### Análise de Estabilidade e Pontos de Equilíbrio:
-            Fazendo $$\frac{dI}{dt} = 0$$, temos dois estados estacionários possíveis:
-            1. **Equilíbrio Livre de Doença (DFE):** $$I^* = 0$$, $$S^* = N$$.
-               * É estável quando $$R_0 = \frac{\beta N}{\gamma} \le 1$$.
-            2. **Equilíbrio Endêmico (EE):** 
-               $$S^* = \frac{\gamma}{\beta}, \quad I^* = N - \frac{\gamma}{\beta} = N \left(1 - \frac{1}{R_0}\right)$$
-               * É estável quando $$R_0 > 1$$.
+            Analisando $$\frac{dI}{dt} = 0$$, obtemos dois estados estacionários:
+            1. **Equilíbrio Livre de Doença (DFE - Disease-Free Equilibrium):**
+               $$I^* = 0, \quad S^* = N$$
+               * **Estabilidade:** Globalmente assintoticamente estável se $$R_0 = \frac{\beta}{\gamma} \le 1$$.
+            2. **Equilíbrio Endêmico (EE - Endemic Equilibrium):**
+               $$S^* = N \frac{\gamma}{\beta} = \frac{N}{R_0}, \quad I^* = N \left(1 - \frac{\gamma}{\beta}\right) = N \left(1 - \frac{1}{R_0}\right)$$
+               Em frações populacionais:
+               $$s^* = \frac{1}{R_0}, \quad i^* = 1 - \frac{1}{R_0}$$
+               * **Estabilidade:** Fisicamente admissível e assintoticamente estável sempre que $$R_0 > 1$$.
+
+            ### Tempo Característico de Transição:
+            O tempo característico de relaxamento da dinâmica até o equilíbrio é dado por:
+            $$\tau = \frac{1}{|\beta - \gamma|}$$
             ''', mathjax=True
         )
     ]
@@ -393,9 +405,15 @@ perguntas = html.Div(
     [
         html.Div(
             [
-                html.Div("1. Dinâmica de Equilíbrio de Referência (γ = 0.5)", className="study-question-title"),
+                html.Div("1. Dinâmica de Equilíbrio de Referência (β = 0.90, γ = 0.50)", className="study-question-title"),
                 dcc.Markdown(
-                    r"Considere a situação de referência com $$\beta = 0.009 \space ano^{-1}$$, $$S(0) = 100$$ e $$I(0) = 1$$. Para $$\gamma = 0.5 \space ano^{-1}$$, qual o número de suscetíveis ($$S^*$$) e infectados ($$I^*$$) no equilíbrio? Qual o tempo necessário para se atingir o equilíbrio?",
+                    r'''
+                    Considere a situação de referência com $$\beta = 0.90 \space ano^{-1}$$ e $$\gamma = 0.50 \space ano^{-1}$$, partindo de $$S(0) = 100$$ e $$I(0) = 1$$ ($$N = 101$$):
+                    * Calcule o número básico de reprodução: $$R_0 = \frac{\beta}{\gamma} = \frac{0.90}{0.50} = 1.80$$.
+                    * Qual a proporção teórica de infectados no equilíbrio? $$(i^* = 1 - 1/R_0 = 1 - 1/1.80 \approx 44.4\%)$$.
+                    * Quantos indivíduos suscetíveis ($$S^*$$) e infectados ($$I^*$$) estarão presentes no equilíbrio?
+                    * Em quanto tempo o sistema atinge aproximadamente o estado de equilíbrio? *(Dica: avalie o tempo característico $$\tau = \frac{1}{|\beta - \gamma|} = \frac{1}{0.40} = 2.5 \space anos$$ e confira na curva gráfica entre $$3\tau$$ e $$5\tau$$)*.
+                    ''',
                     mathjax=True
                 )
             ],
@@ -403,9 +421,16 @@ perguntas = html.Div(
         ),
         html.Div(
             [
-                html.Div("2. Sensibilidade à Taxa de Recuperação (γ)", className="study-question-title"),
+                html.Div("2. Sensibilidade à Taxa de Recuperação (γ = 0.2, 0.4, 0.8 e 0.9)", className="study-question-title"),
                 dcc.Markdown(
-                    r"Repita o estudo do item 1 variando $$\gamma$$ nos valores $$0.2$$, $$0.4$$, $$0.8$$ e $$0.9 \space ano^{-1}$$. Como o aumento de $$\gamma$$ afeta o tamanho do reservatório endêmico de infectados e a velocidade com que o equilíbrio é alcançado?",
+                    r'''
+                    Mantendo a taxa de transmissão fixa em $$\beta = 0.90 \space ano^{-1}$$, utilize os botões de cenários rápidos para analisar os seguintes valores de $$\gamma$$:
+                    * **$$\gamma = 0.20 \space ano^{-1}$$:** Período infeccioso longo ($$5$$ anos). Verifique que $$R_0 = 4.50$$ e $$i^* \approx 77.8\%$$. A convergência é mais rápida ou mais lenta?
+                    * **$$\gamma = 0.40 \space ano^{-1}$$:** $$R_0 = 2.25$$, com $$i^* \approx 55.6\%$$.
+                    * **$$\gamma = 0.80 \space ano^{-1}$$:** $$R_0 = 1.125$$, com $$i^* \approx 11.1\%$$.
+                    * **$$\gamma = 0.90 \space ano^{-1}$$:** $$R_0 = 1.00$$. O que ocorre no limiar exato $$\beta = \gamma$$?
+                    Observe como o aumento de $$\gamma$$ (recuperação mais rápida) comprime o reservatório endêmico de infectados e como o tempo para atingir o equilíbrio aumenta drasticamente quando $$\gamma \to \beta$$ (*desaceleração crítica*).
+                    ''',
                     mathjax=True
                 )
             ],
@@ -413,9 +438,28 @@ perguntas = html.Div(
         ),
         html.Div(
             [
-                html.Div("3. Limiar Crítico de Extinção (R₀ = 1)", className="study-question-title"),
+                html.Div("3. Limiar Crítico de Bifurcação e Extinção (R₀ ≤ 1)", className="study-question-title"),
                 dcc.Markdown(
-                    r"Para $$\beta = 0.009$$ e $$N = 101$$, determine o valor crítico de $$\gamma$$ acima do qual a doença é naturalmente eliminada ($$I \to 0$$). O que acontece quando $$\gamma \ge 0.909$$?",
+                    r'''
+                    Teste o cenário de **Extinção** com $$\gamma = 1.20 \space ano^{-1}$$ ($$R_0 = \frac{0.90}{1.20} = 0.75 < 1$$):
+                    * O que acontece com o único indivíduo inicialmente infectado ($$I(0) = 1$$)? A infecção cresce em algum momento?
+                    * Por que quando $$\gamma > \beta$$, o número médio de casos secundários gerados por um infectado é estritamente menor que 1, tornando impossível a sustentação da doença na população?
+                    ''',
+                    mathjax=True
+                )
+            ],
+            className="study-question-box"
+        ),
+        html.Div(
+            [
+                html.Div("4. Invariância em Relação ao Tamanho da População (N)", className="study-question-title"),
+                dcc.Markdown(
+                    r'''
+                    No modelo com transmissão proporcional $$\frac{\beta S I}{N}$$, o limiar $$R_0 = \beta / \gamma$$ independe do tamanho absoluto da população:
+                    * Ajuste o slider de $$S(0)$$ para $$200$$ ou $$400$$ indivíduos (com $$I(0) = 1$$).
+                    * Mude o seletor de escala no topo do gráfico para **Proporção (%)**.
+                    * Verifique se as curvas normalizadas e a fração endêmica ($$i^* = 44.4\%$$) se alteram. Por que essa formulação é mais realista para comunidades humanas agregadas do que a incidência pseudo-ação-de-massas pura ($$\beta S I$$)?
+                    ''',
                     mathjax=True
                 )
             ],

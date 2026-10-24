@@ -51,28 +51,28 @@ def register_callbacks(app):
 
         # Retorna: beta, gamma, t_end, s_init, i_init
         if botao_acionado in ('btn_padrao', 'btn_q1'):
-            # Cenário de Referência (Q1)
-            return 0.009, 0.50, 100, 100, 1
+            # Cenário de Referência (Q1: beta = 0.90, gamma = 0.50 -> R0 = 1.80)
+            return 0.90, 0.50, 100, 100, 1
 
         elif botao_acionado == 'btn_q2a':
-            # Q2a: gamma = 0.20 (recuperação lenta, maior endemicidade)
-            return 0.009, 0.20, 100, 100, 1
+            # Q2a: gamma = 0.20 (R0 = 4.50, alta endemicidade)
+            return 0.90, 0.20, 100, 100, 1
 
         elif botao_acionado == 'btn_q2b':
-            # Q2b: gamma = 0.40
-            return 0.009, 0.40, 100, 100, 1
+            # Q2b: gamma = 0.40 (R0 = 2.25)
+            return 0.90, 0.40, 100, 100, 1
 
         elif botao_acionado == 'btn_q2c':
-            # Q2c: gamma = 0.80
-            return 0.009, 0.80, 100, 100, 1
+            # Q2c: gamma = 0.80 (R0 = 1.125)
+            return 0.90, 0.80, 100, 100, 1
 
         elif botao_acionado == 'btn_q2d':
-            # Q2d: gamma = 0.90 (próximo do limiar crítico gamma_c = 0.909)
-            return 0.009, 0.90, 150, 100, 1
+            # Q2d: gamma = 0.90 (R0 = 1.00, limiar crítico exato beta = gamma)
+            return 0.90, 0.90, 150, 100, 1
 
         elif botao_acionado == 'btn_extincao':
-            # Extinção: gamma = 1.00 > beta*N (R0 < 1)
-            return 0.009, 1.00, 100, 100, 1
+            # Extinção: gamma = 1.20 > beta (R0 = 0.75 < 1)
+            return 0.90, 1.20, 100, 100, 1
 
         raise PreventUpdate
 
@@ -98,7 +98,7 @@ def register_callbacks(app):
     def update_badges(beta, gamma, t_end, s_init, i_init):
         tau_inf = (1.0 / gamma) if gamma and gamma > 0 else 0.0
         return (
-            f"{beta:.3f} ano⁻¹",
+            f"{beta:.2f} ano⁻¹",
             f"{gamma:.2f} ano⁻¹ (1/γ = {tau_inf:.1f} a)",
             f"{t_end} anos",
             f"{s_init} indiv.",
@@ -149,7 +149,6 @@ def register_callbacks(app):
         tempo_pico = res["tempo_pico"]
         s_final = res["s_final"]
         i_final = res["i_final"]
-        status_epidemia = res["status_epidemia"]
 
         # Configura curvas conforme unidade selecionada (proporção % ou contagem absoluta)
         if unit_display == 'pct':
@@ -172,7 +171,7 @@ def register_callbacks(app):
         # Construção do gráfico com Plotly
         fig = go.Figure()
 
-        # Linha teórica tracejada para o equilíbrio de Infectados I* (se R0 > 1)
+        # Linhas teóricas tracejadas para os equilíbrios analíticos (se R0 > 1)
         if r0 > 1.0 and i_eq > 0.05:
             fig.add_hline(
                 y=eq_i_val,
@@ -247,7 +246,7 @@ def register_callbacks(app):
         )
 
         # Formatação dos cards de métricas (KPIs)
-        # KPI 1: R0
+        # KPI 1: R0 = beta / gamma
         card_r0_val = f"{r0:.2f}"
         card_r0_sub = "Potencial endêmico (R₀ > 1)" if r0 > 1.0 else "Extinção da infecção (R₀ ≤ 1)"
 
@@ -262,7 +261,7 @@ def register_callbacks(app):
         # KPI 3: Infectados no Equilíbrio (I*)
         if r0 > 1.0:
             card_ieq_val = f"{res['prop_i_eq']:.1f}%" if unit_display == 'pct' else f"{i_eq:.1f}"
-            card_ieq_sub = f"I* = N - γ/β (numérico final: {i_final:.1f})"
+            card_ieq_sub = f"I* = N·(1 - 1/R₀) (numérico: {i_final:.1f})"
         else:
             card_ieq_val = "0.0%" if unit_display == 'pct' else "0.0"
             card_ieq_sub = "Equilíbrio livre de doença (I* = 0)"
@@ -270,7 +269,7 @@ def register_callbacks(app):
         # KPI 4: Suscetíveis no Equilíbrio (S*)
         if r0 > 1.0:
             card_seq_val = f"{res['prop_s_eq']:.1f}%" if unit_display == 'pct' else f"{s_eq:.1f}"
-            card_seq_sub = f"S* = γ/β (numérico final: {s_final:.1f})"
+            card_seq_sub = f"S* = N/R₀ (numérico: {s_final:.1f})"
         else:
             card_seq_val = "100.0%" if unit_display == 'pct' else f"{n_0:.1f}"
             card_seq_sub = f"Toda a população suscetível (N={n_0:.0f})"
